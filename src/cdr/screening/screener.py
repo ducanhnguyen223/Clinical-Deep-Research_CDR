@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING
 from cdr.core.enums import ExclusionReason, StudyType
 from cdr.core.schemas import PICO, Record, ScreeningDecision
 from cdr.llm import build_messages, create_provider
-from cdr.observability import get_cdr_metrics, get_tracer
+from cdr.llm.factory import ProviderType
+from cdr.observability import SpanStatus, get_cdr_metrics, get_tracer
 
 if TYPE_CHECKING:
     from cdr.llm.base import BaseLLMProvider
@@ -88,7 +89,7 @@ class Screener:
 
     def __init__(
         self,
-        provider: "BaseLLMProvider | str | None" = None,
+        provider: "BaseLLMProvider | ProviderType | None" = None,
         model: str | None = None,
         temperature: float = 0.0,
     ) -> None:
@@ -150,7 +151,7 @@ class Screener:
                 return decision
 
             except Exception as e:
-                span.set_status("error", str(e))
+                span.set_status(SpanStatus.ERROR, str(e))
                 # On error, default to include for human review
                 return ScreeningDecision(
                     record_id=record.record_id,
