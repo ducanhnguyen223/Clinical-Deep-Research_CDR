@@ -165,7 +165,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). It opens with the three-step version.
 | [docs/incidents.md](docs/incidents.md) | Postmortems of things that broke |
 | [docs/evaluation.md](docs/evaluation.md) | How output quality is measured |
 | [docs/report-anatomy.md](docs/report-anatomy.md) | How to read and audit a CDR report |
-| [docs/providers.md](docs/providers.md) | LLM provider setup and free tiers |
+| [docs/providers.md](docs/providers.md) | LLM provider setup, model catalogs and account limits |
 | [ROADMAP.md](ROADMAP.md) | What's next |
 
 ## Who's behind this

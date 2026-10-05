@@ -24,14 +24,14 @@ class AnthropicProvider(BaseLLMProvider):
     Anthropic Claude API provider.
 
     Supports:
-        - Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
+        - Claude Sonnet models
         - Streaming responses
         - Extended context (up to 200K tokens)
     """
 
     def __init__(
         self,
-        model: str = "claude-3-5-sonnet-20241022",
+        model: str = "claude-sonnet-5-5",
         api_key: str | None = None,
         base_url: str | None = None,
         timeout: float = 60.0,
@@ -41,7 +41,7 @@ class AnthropicProvider(BaseLLMProvider):
         Initialize Anthropic provider.
 
         Args:
-            model: Model name (claude-3-5-sonnet-20241022, etc.).
+            model: Anthropic API model ID.
             api_key: Anthropic API key.
             base_url: Custom base URL.
             timeout: Request timeout.

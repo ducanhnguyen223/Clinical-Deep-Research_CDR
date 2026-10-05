@@ -2,21 +2,15 @@
 OpenRouter LLM Provider
 
 Integration with OpenRouter API via OpenAI-compatible endpoint.
-OpenRouter provides unified access to 400+ AI models through a single API.
+OpenRouter provides a unified endpoint for models from multiple providers.
 
 Features:
-- Access to many free models (suffix :free)
-- Automatic fallbacks between providers
-- Pay-per-use for premium models
-- Support for tool calling, structured outputs, etc.
+- Access to models from multiple providers through one API
+- Support for tool calling, structured outputs, and streaming
 
 Base URL: https://openrouter.ai/api/v1
 Uses standard OpenAI SDK with modified base_url.
 
-Free tier limits (models ending in :free):
-- 20 requests/minute
-- 50 requests/day (if <10 credits purchased)
-- 1000 requests/day (if ≥10 credits purchased)
 """
 
 from __future__ import annotations
@@ -46,37 +40,36 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 60.0  # seconds
 
 
-# OpenRouter recommended models (all very affordable)
+# OpenRouter model IDs
 OPENROUTER_MODELS = {
-    # Primary models (very cheap or free)
-    "default": "meta-llama/llama-3.1-8b-instruct",  # Very cheap
+    # General-purpose models
+    "default": "meta-llama/llama-3.1-8b-instruct",
     "fast": "meta-llama/llama-3.1-8b-instruct",
-    "large": "meta-llama/llama-3.1-70b-instruct",  # Better quality
+    "large": "meta-llama/llama-3.1-70b-instruct",
     # Reasoning models
     "reasoning": "deepseek/deepseek-r1",
     # Best quality (more expensive)
-    "premium": "anthropic/claude-3.5-sonnet",
+    "premium": "anthropic/claude-sonnet-5.5",
     "gpt": "openai/gpt-4o-mini",
 }
 
 
 class OpenRouterProvider(BaseLLMProvider):
-    """OpenRouter LLM provider - unified access to 400+ models.
+    """OpenRouter LLM provider for models from multiple providers.
 
-    OpenRouter provides a single API endpoint for accessing many different
-    AI models from various providers (OpenAI, Anthropic, Google, Meta, etc.).
+    OpenRouter provides a single API endpoint for accessing models from various
+    providers (OpenAI, Anthropic, Google, Meta, etc.).
 
     API Key: Get from https://openrouter.ai/keys
     Documentation: https://openrouter.ai/docs
 
-    Free models: Append :free to model name (e.g., meta-llama/llama-3.1-8b-instruct:free)
     """
 
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
     def __init__(
         self,
-        model: str = "meta-llama/llama-3.1-8b-instruct",
+        model: str = OPENROUTER_MODELS["default"],
         api_key: str | None = None,
         timeout: float = 120.0,  # Some models can be slow
         max_retries: int = 3,
@@ -86,7 +79,7 @@ class OpenRouterProvider(BaseLLMProvider):
         """Initialize OpenRouter provider.
 
         Args:
-            model: Model name (e.g., meta-llama/llama-3.1-8b-instruct:free).
+            model: OpenRouter model ID.
             api_key: OpenRouter API key. Falls back to OPENROUTER_API_KEY env var.
             timeout: Request timeout.
             max_retries: Maximum retries on transient errors.

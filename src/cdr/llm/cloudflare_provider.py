@@ -2,10 +2,6 @@
 Cloudflare Workers AI LLM Provider
 
 Integration with Cloudflare Workers AI API via OpenAI-compatible endpoint.
-Cloudflare offers FREE tier with generous limits:
-- 10,000 Neurons per day free (roughly equivalent to ~100K tokens)
-- Text Generation: 300 requests/min
-- Models: llama-3.1-8b-instruct, llama-3.3-70b-instruct-fp8-fast, etc.
 
 Base URL: https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1
 Uses standard OpenAI SDK with modified base_url.
@@ -41,29 +37,22 @@ MAX_DELAY = 30.0  # seconds
 
 # Cloudflare Workers AI models (using @cf prefix format)
 CLOUDFLARE_MODELS = {
-    "default": "@cf/meta/llama-3.1-8b-instruct",  # Fast, good quality
+    "default": "@cf/meta/llama-3.1-8b-instruct-fast",  # Active fast variant
     "fast": "@cf/meta/llama-3.1-8b-instruct-fast",  # Fastest
     "large": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",  # Best quality
     "reasoning": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",  # Reasoning
     "qwen": "@cf/qwen/qwen3-30b-a3b-fp8",  # Qwen model
 }
 
-# Cloudflare Free tier limits
-CLOUDFLARE_FREE_LIMITS = {
-    "neurons_per_day": 10_000,
-    "requests_per_minute_text_gen": 300,
-}
-
 
 class CloudflareProvider(BaseLLMProvider):
-    """Cloudflare Workers AI LLM provider - FREE tier via OpenAI-compatible API.
+    """Cloudflare Workers AI LLM provider via OpenAI-compatible API.
 
     Cloudflare Workers AI runs models at edge locations globally.
     OpenAI-compatible API endpoint for easy integration.
 
     API Token: Create at https://dash.cloudflare.com/profile/api-tokens
     Account ID: Found at https://dash.cloudflare.com/?to=/:account/ai/workers-ai
-    Free tier: 10,000 neurons/day (roughly 100K tokens)
     """
 
     @staticmethod
@@ -73,7 +62,7 @@ class CloudflareProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        model: str = "@cf/meta/llama-3.1-8b-instruct",
+        model: str = CLOUDFLARE_MODELS["default"],
         api_key: str | None = None,
         account_id: str | None = None,
         timeout: float = 60.0,
@@ -82,7 +71,7 @@ class CloudflareProvider(BaseLLMProvider):
         """Initialize Cloudflare Workers AI provider.
 
         Args:
-            model: Model name (e.g., @cf/meta/llama-3.1-8b-instruct).
+            model: Cloudflare Workers AI model ID.
             api_key: Cloudflare API Token. Falls back to CLOUDFLARE_API_KEY env var.
             account_id: Cloudflare Account ID. Falls back to CLOUDFLARE_ACCOUNT_ID env var.
             timeout: Request timeout.

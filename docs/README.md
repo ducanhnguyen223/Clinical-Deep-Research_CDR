@@ -22,7 +22,7 @@ Pick the page that matches the question you have.
 - [online-run-notes.md](online-run-notes.md): how the bundled real runs were made
 
 **How do I use it?**
-- [providers.md](providers.md): LLM keys, free tiers, local models
+- [providers.md](providers.md): LLM keys, hosted-provider catalogs, local models
 - [report-anatomy.md](report-anatomy.md): how to read and audit a report
 
 Something missing or wrong? That's a docs bug.

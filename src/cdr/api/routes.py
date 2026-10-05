@@ -44,7 +44,7 @@ class RunRequest(BaseModel):
     )
     model: str | None = Field(
         default=None,
-        description="LLM model to use. If None, uses provider-specific default (Gemini: gemini-2.5-flash, Groq: llama-3.3-70b-versatile)",
+        description="LLM model to use. If omitted, the configured provider-specific default is used.",
     )
     dod_level: int = Field(
         default=1,
