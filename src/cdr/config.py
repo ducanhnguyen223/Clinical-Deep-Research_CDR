@@ -19,26 +19,26 @@ class LLMSettings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", env_prefix="", extra="ignore"
     )
 
-    # HuggingFace (PRIMARY PROVIDER)
+    # Hugging Face
     hf_token: str | None = Field(default=None, alias="HF_TOKEN")
     hf_endpoint_url: str | None = Field(default=None, alias="HF_ENDPOINT_URL")
-    hf_model: str = Field(default="meta-llama/Meta-Llama-3.1-70B-Instruct", alias="HF_MODEL")
+    hf_model: str = Field(default="Qwen/Qwen2.5-72B-Instruct", alias="HF_MODEL")
     hf_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     hf_max_tokens: int = Field(default=4096, ge=1)
 
-    # Groq (FREE TIER - generous limits)
+    # Groq
     groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
-    groq_model: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL")
+    groq_model: str = Field(default="openai/gpt-oss-20b", alias="GROQ_MODEL")
 
-    # Gemini (Google AI Studio - 1M+ tokens/day FREE)
+    # Gemini (Google AI Studio)
     gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
     google_api_key: str | None = Field(default=None, alias="GOOGLE_API_KEY")
-    gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
+    gemini_model: str = Field(default="gemini-3.8-flash", alias="GEMINI_MODEL")
 
-    # Cerebras (1M tokens/day FREE)
+    # Cerebras
     cerebras_api_key: str | None = Field(default=None, alias="CEREBRAS_API_KEY")
 
-    # OpenRouter (400+ models, free tier)
+    # OpenRouter
     openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")
 
     # Cloudflare Workers AI
@@ -55,9 +55,9 @@ class LLMSettings(BaseSettings):
 
     # Anthropic (FALLBACK)
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
-    anthropic_model: str = Field(default="claude-3-5-sonnet-20241022", alias="ANTHROPIC_MODEL")
+    anthropic_model: str = Field(default="claude-sonnet-5-5", alias="ANTHROPIC_MODEL")
 
-    # Default provider: Gemini by default (1M+ tokens/day FREE)
+    # Default provider: Gemini
     default_provider: Literal[
         "gemini",
         "cerebras",

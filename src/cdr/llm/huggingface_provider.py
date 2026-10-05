@@ -2,7 +2,7 @@
 Hugging Face LLM Provider
 
 Integration with Hugging Face Inference API / Endpoints / TGI.
-This is the PRIMARY provider for CDR (not OpenAI/Anthropic).
+Configure an Inference Provider model or a dedicated endpoint.
 
 Implements robust retry with exponential backoff for handling:
 - 500 Internal Server Error (transient server issues)
@@ -71,14 +71,14 @@ class HuggingFaceProvider(BaseLLMProvider):
     - Inference Endpoints (dedicated)
     - Text Generation Inference (TGI)
 
-    This is the PRIMARY provider for CDR. OpenAI/Anthropic are fallbacks.
+    Configure an Inference Provider model or a dedicated endpoint.
     """
 
     def __init__(
         self,
         api_key: str | None = None,
         endpoint_url: str | None = None,
-        model: str = "meta-llama/Llama-3.2-3B-Instruct",  # FREE tier model
+        model: str = "Qwen/Qwen2.5-72B-Instruct",
         timeout: float = 120.0,
     ) -> None:
         """Initialize Hugging Face provider.
@@ -570,7 +570,7 @@ class HuggingFaceProvider(BaseLLMProvider):
 
 
 def create_huggingface_provider(
-    model: str = "meta-llama/Llama-3.1-70B-Instruct",
+    model: str = "Qwen/Qwen2.5-72B-Instruct",
     **kwargs: Any,
 ) -> HuggingFaceProvider:
     """Create HuggingFace provider with common defaults.
@@ -589,24 +589,17 @@ def create_huggingface_provider(
 # RECOMMENDED MODELS
 # =============================================================================
 
-# =============================================================================
-# RECOMMENDED MODELS - All verified FREE on HuggingFace Router API
-# =============================================================================
-# Based on MedeX configurations - all tested and working with HF_TOKEN
-# Source: MedeX/run_api.py MODEL_MAPPING (2026-01-14)
+# Model IDs with live Inference Provider mappings in the Hugging Face Hub API.
 
 RECOMMENDED_MODELS = {
-    # === FREE HIGH-CAPACITY MODELS (verified working) ===
-    "default": "Qwen/Qwen2.5-72B-Instruct",  # FREE, best quality ~50s
-    "fast": "google/gemma-3-27b-it",  # FREE, fastest ~20s
-    "large": "meta-llama/Llama-3.3-70B-Instruct",  # FREE, balanced ~32s
-    "medical": "Qwen/Qwen2.5-72B-Instruct",  # FREE, excellent for medical
-    "coding": "meta-llama/Llama-3.3-70B-Instruct",  # FREE, good for code
-    # === REASONING MODELS (with <think> tags) ===
-    "reasoning": "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",  # FREE, chain-of-thought
-    "qwq": "Qwen/QwQ-32B",  # FREE, reasoning with <think> tags
-    # === ALTERNATIVE ALIASES ===
-    "llama70b": "meta-llama/Llama-3.3-70B-Instruct",  # FREE
-    "qwen72b": "Qwen/Qwen2.5-72B-Instruct",  # FREE
-    "gemma": "google/gemma-3-27b-it",  # FREE
+    "default": "Qwen/Qwen2.5-72B-Instruct",
+    "fast": "google/gemma-3-27b-it",
+    "large": "meta-llama/Llama-3.3-70B-Instruct",
+    "medical": "Qwen/Qwen2.5-72B-Instruct",
+    "coding": "meta-llama/Llama-3.3-70B-Instruct",
+    "reasoning": "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+    "qwq": "Qwen/QwQ-32B",
+    "llama70b": "meta-llama/Llama-3.3-70B-Instruct",
+    "qwen72b": "Qwen/Qwen2.5-72B-Instruct",
+    "gemma": "google/gemma-3-27b-it",
 }
