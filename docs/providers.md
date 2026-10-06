@@ -23,19 +23,20 @@ account and can change over time.
 
 ## Setup
 
-| Provider | `.env` | Get a key | Default model |
-|---|---|---|---|
-| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-3.8-flash` |
-| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-20b` |
-| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` |
-| OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` |
-| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/meta/llama-3.1-8b-instruct-fast` |
-| Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` |
-| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` |
-| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | `claude-sonnet-4-6` |
+| Provider | `.env` | Get a key | Default model | Official model catalog |
+|---|---|---|---|---|
+| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-3.8-flash` | [Gemini API](https://ai.google.dev/gemini-api/docs/models) |
+| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-20b` | [GroqCloud](https://console.groq.com/docs/models) |
+| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` | [Cerebras Inference](https://inference-docs.cerebras.ai/models) |
+| OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` | [OpenRouter](https://openrouter.ai/models) |
+| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/meta/llama-3.1-8b-instruct-fast` | [Workers AI](https://developers.cloudflare.com/workers-ai/models/) |
+| Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` | [Inference Providers](https://huggingface.co/inference/models) |
+| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` | [OpenAI API](https://developers.openai.com/api/docs/models) |
+| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | `claude-sonnet-4-6` | [Claude models](https://platform.claude.com/docs/en/models/overview) |
 
-The table lists starting defaults, not a guarantee that a model is enabled for every account.
-Check each provider's current catalog and account limits before use.
+The defaults were checked against these provider catalogs on 2026-10-07. The table lists starting
+defaults, not a guarantee that a model is enabled for every account. Availability and account
+limits can change; check the linked catalog and your account before use.
 
 Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate
 models regularly. If a default starts returning 404s, that's a
