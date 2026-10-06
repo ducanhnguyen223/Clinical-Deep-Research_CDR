@@ -31,7 +31,7 @@ class AnthropicProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        model: str = "claude-sonnet-5-5",
+        model: str = "claude-sonnet-4-6",
         api_key: str | None = None,
         base_url: str | None = None,
         timeout: float = 60.0,
