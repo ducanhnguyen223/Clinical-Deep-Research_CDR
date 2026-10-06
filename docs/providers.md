@@ -32,7 +32,7 @@ account and can change over time.
 | Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/meta/llama-3.1-8b-instruct-fast` |
 | Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` |
 | OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` |
-| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | `claude-sonnet-5-5` |
+| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | `claude-sonnet-4-6` |
 
 The table lists starting defaults, not a guarantee that a model is enabled for every account.
 Check each provider's current catalog and account limits before use.

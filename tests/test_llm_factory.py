@@ -93,6 +93,7 @@ def test_provider_defaults_match_config_and_model_maps():
     assert config_defaults["groq_model"] == GROQ_MODELS["default"]
     assert config_defaults["hf_model"] == RECOMMENDED_MODELS["default"]
     assert config_defaults["openai_model"] == signature(OpenAIProvider).parameters["model"].default
+    assert config_defaults["anthropic_model"] == "claude-sonnet-4-6"
     assert (
         config_defaults["anthropic_model"]
         == signature(AnthropicProvider).parameters["model"].default
