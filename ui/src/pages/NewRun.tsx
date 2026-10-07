@@ -8,7 +8,7 @@ export default function NewRun() {
   const navigate = useNavigate()
   const [question, setQuestion] = useState('')
   const [maxResults, setMaxResults] = useState(100)
-  const [model, setModel] = useState('')
+  const [model, setModel] = useState('llama-3.1-8b-instant')
   const [dodLevel, setDodLevel] = useState(1)
 
   const mutation = useMutation({
@@ -23,7 +23,7 @@ export default function NewRun() {
     mutation.mutate({
       research_question: question,
       max_results: maxResults,
-      ...(model ? { model } : {}),
+      model,
       output_formats: ['markdown', 'json'],
       dod_level: dodLevel,
     })
@@ -158,20 +158,24 @@ export default function NewRun() {
                 htmlFor="model"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                LLM model override (optional)
+                LLM Model
               </label>
-              <input
+              <select
                 id="model"
-                type="text"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                placeholder="Model ID supported by the configured provider"
                 className="w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Leave the override empty to use the configured provider and its default model.
-                Any override must belong to the provider configured for this deployment.
-              </p>
+              >
+                <optgroup label="Groq (FREE - Recomendado)">
+                  <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (default, fast)</option>
+                  <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+                  <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                </optgroup>
+                <optgroup label="HuggingFace (requiere créditos)">
+                  <option value="meta-llama/Llama-3.1-70B-Instruct">Llama 3.1 70B</option>
+                  <option value="Qwen/Qwen2.5-72B-Instruct">Qwen 2.5 72B</option>
+                </optgroup>
+              </select>
             </div>
           </div>
         </details>

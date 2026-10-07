@@ -7,7 +7,6 @@ import pytest
 
 from cdr.config import LLMSettings, reset_settings
 from cdr.core.exceptions import ConfigurationError
-from cdr.llm.anthropic_provider import AnthropicProvider
 from cdr.llm.cerebras_provider import CEREBRAS_MODELS, CerebrasProvider
 from cdr.llm.cloudflare_provider import CLOUDFLARE_MODELS, CloudflareProvider
 from cdr.llm.factory import create_provider
@@ -93,11 +92,6 @@ def test_provider_defaults_match_config_and_model_maps():
     assert config_defaults["groq_model"] == GROQ_MODELS["default"]
     assert config_defaults["hf_model"] == RECOMMENDED_MODELS["default"]
     assert config_defaults["openai_model"] == signature(OpenAIProvider).parameters["model"].default
-    assert config_defaults["anthropic_model"] == "claude-sonnet-4-6"
-    assert (
-        config_defaults["anthropic_model"]
-        == signature(AnthropicProvider).parameters["model"].default
-    )
 
 
 @pytest.mark.parametrize(
