@@ -46,16 +46,16 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 60.0  # seconds
 
 
-# OpenRouter recommended models (all very affordable)
+# OpenRouter model presets
 OPENROUTER_MODELS = {
-    # Primary models (very cheap or free)
-    "default": "meta-llama/llama-3.1-8b-instruct",  # Very cheap
+    # General-purpose models
+    "default": "meta-llama/llama-3.1-8b-instruct",
     "fast": "meta-llama/llama-3.1-8b-instruct",
     "large": "meta-llama/llama-3.1-70b-instruct",  # Better quality
     # Reasoning models
     "reasoning": "deepseek/deepseek-r1",
     # Best quality (more expensive)
-    "premium": "anthropic/claude-3.5-sonnet",
+    "premium": "anthropic/claude-sonnet-5.5",
     "gpt": "openai/gpt-4o-mini",
 }
 
@@ -76,7 +76,7 @@ class OpenRouterProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        model: str = "meta-llama/llama-3.1-8b-instruct",
+        model: str = OPENROUTER_MODELS["default"],
         api_key: str | None = None,
         timeout: float = 120.0,  # Some models can be slow
         max_retries: int = 3,

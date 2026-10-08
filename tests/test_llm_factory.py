@@ -1,10 +1,18 @@
 """Tests for provider selection in cdr.llm.factory."""
 
+from inspect import signature
+
 import pytest
 
-from cdr.config import reset_settings
+from cdr.config import LLMSettings, reset_settings
 from cdr.core.exceptions import ConfigurationError
+from cdr.llm.cerebras_provider import CEREBRAS_MODELS, CerebrasProvider
+from cdr.llm.cloudflare_provider import CLOUDFLARE_MODELS, CloudflareProvider
 from cdr.llm.factory import create_provider
+from cdr.llm.gemini_provider import GEMINI_MODELS, GeminiProvider
+from cdr.llm.groq_provider import GROQ_MODELS, GroqProvider
+from cdr.llm.huggingface_provider import RECOMMENDED_MODELS
+from cdr.llm.openrouter_provider import OPENROUTER_MODELS, OpenRouterProvider
 
 PROVIDER_ENV_VARS = [
     "OPENAI_API_KEY",
@@ -48,3 +56,23 @@ def test_explicit_key_is_kept_with_base_url(monkeypatch):
     provider = create_provider("openai")
 
     assert provider._client.api_key == "sk-test"
+
+
+def test_provider_constructor_defaults_match_model_maps():
+    for provider, models in (
+        (CerebrasProvider, CEREBRAS_MODELS),
+        (CloudflareProvider, CLOUDFLARE_MODELS),
+        (GeminiProvider, GEMINI_MODELS),
+        (GroqProvider, GROQ_MODELS),
+        (OpenRouterProvider, OPENROUTER_MODELS),
+    ):
+        assert signature(provider).parameters["model"].default == models["default"]
+
+    assert LLMSettings.model_fields["groq_model"].default == GROQ_MODELS["default"]
+    assert LLMSettings.model_fields["hf_model"].default == RECOMMENDED_MODELS["default"]
+    assert LLMSettings.model_fields["gemini_model"].default == GEMINI_MODELS["default"]
+    assert set(CEREBRAS_MODELS.values()) <= {"qwen-3.8-27b", "gpt-oss-120b"}
+    assert set(GROQ_MODELS.values()) <= {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}
+    assert CLOUDFLARE_MODELS["fast"] == "@cf/openai/gpt-oss-20b"
+    assert GEMINI_MODELS["fast"] == "gemini-2.5-flash-lite"
+    assert OPENROUTER_MODELS["premium"] == "anthropic/claude-sonnet-5.5"

@@ -2,11 +2,6 @@
 Cerebras LLM Provider
 
 Integration with Cerebras Inference API via OpenAI-compatible endpoint.
-Cerebras offers FREE tier with generous limits:
-- All models: 60K TPM, 1M TPD, 30 RPM, 900 RPH, 14.4K RPD
-- llama-3.3-70b: Best for reasoning
-- qwen-3-32b: Good balance
-- llama3.1-8b: Fast
 
 Base URL: https://api.cerebras.ai/v1
 Uses standard OpenAI SDK with modified base_url.
@@ -39,40 +34,30 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 60.0  # seconds
 
 
-# Cerebras FREE tier models
-CEREBRAS_FREE_MODELS = {
-    "default": "llama-3.3-70b",  # Best quality
-    "fast": "llama3.1-8b",  # Fastest
-    "reasoning": "llama-3.3-70b",  # Best reasoning
-    "qwen": "qwen-3-32b",  # Good balance
-    "large": "gpt-oss-120b",  # Largest (preview)
-}
-
-# Cerebras Free tier limits (per model)
-CEREBRAS_FREE_LIMITS = {
-    "tokens_per_minute": 60_000,
-    "tokens_per_day": 1_000_000,
-    "requests_per_minute": 30,
-    "requests_per_hour": 900,
-    "requests_per_day": 14_400,
+# Cerebras Shared Inference model presets.
+CEREBRAS_MODELS = {
+    "default": "qwen-3.8-27b",
+    "fast": "qwen-3.8-27b",
+    "reasoning": "gpt-oss-120b",
+    "qwen": "qwen-3.8-27b",
+    "large": "gpt-oss-120b",
 }
 
 
 class CerebrasProvider(BaseLLMProvider):
-    """Cerebras LLM provider - FREE tier via OpenAI-compatible API.
+    """Cerebras LLM provider via the OpenAI-compatible API.
 
     Cerebras provides extremely fast inference on their custom LPU chips.
     OpenAI-compatible API endpoint for easy integration.
 
     API Key: Get from https://cloud.cerebras.ai/
-    Free tier: 60K tokens/min, 1M tokens/day
     """
 
     CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 
     def __init__(
         self,
-        model: str = "llama-3.3-70b",
+        model: str = CEREBRAS_MODELS["default"],
         api_key: str | None = None,
         timeout: float = 60.0,
         max_retries: int = 3,
@@ -80,7 +65,7 @@ class CerebrasProvider(BaseLLMProvider):
         """Initialize Cerebras provider.
 
         Args:
-            model: Model name (llama-3.3-70b, qwen-3-32b, llama3.1-8b).
+            model: Cerebras Shared Inference model ID.
             api_key: Cerebras API key. Falls back to CEREBRAS_API_KEY env var.
             timeout: Request timeout.
             max_retries: Maximum retries on transient errors.

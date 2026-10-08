@@ -2,11 +2,6 @@
 Groq LLM Provider
 
 Integration with Groq API (OpenAI-compatible).
-Groq offers FREE tier with generous limits:
-- Llama 3.1 8B: 14,400 requests/day, 6,000 tokens/minute
-- Llama 3.3 70B: 1,000 requests/day, 12,000 tokens/minute
-
-This is the PRIMARY FREE provider for CDR.
 Includes automatic retry with exponential backoff for rate limits.
 """
 
@@ -37,37 +32,27 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 30.0  # seconds
 
 
-# Groq FREE tier models - NO PAYMENT REQUIRED
-GROQ_FREE_MODELS = {
-    "default": "llama-3.1-8b-instant",  # Fast, 14k req/day
-    "fast": "llama-3.1-8b-instant",
-    "large": "llama-3.3-70b-versatile",  # Better quality, 1k req/day
-    "reasoning": "llama-3.3-70b-versatile",
-    "medical": "llama-3.3-70b-versatile",  # Best for medical reasoning
-}
-
-# Model limits for reference
-GROQ_LIMITS = {
-    "llama-3.1-8b-instant": {"requests_per_day": 14400, "tokens_per_minute": 6000},
-    "llama-3.3-70b-versatile": {"requests_per_day": 1000, "tokens_per_minute": 12000},
-    "llama-3.1-70b-versatile": {"requests_per_day": 1000, "tokens_per_minute": 6000},
+GROQ_MODELS = {
+    "default": "openai/gpt-oss-120b",
+    "fast": "openai/gpt-oss-20b",
+    "large": "openai/gpt-oss-120b",
+    "reasoning": "openai/gpt-oss-120b",
+    "medical": "openai/gpt-oss-120b",
 }
 
 
 class GroqProvider(BaseLLMProvider):
-    """Groq LLM provider - FREE tier with fast inference.
+    """Groq LLM provider with fast inference.
 
-    Groq provides OpenAI-compatible API with free tier.
+    Groq provides an OpenAI-compatible API.
     Uses LPU (Language Processing Unit) for fast inference.
-
-    This is the PRIMARY FREE provider for CDR.
     """
 
     GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
     def __init__(
         self,
-        model: str = "llama-3.3-70b-versatile",
+        model: str = GROQ_MODELS["default"],
         api_key: str | None = None,
         timeout: float = 60.0,
         max_retries: int = 3,
@@ -75,7 +60,7 @@ class GroqProvider(BaseLLMProvider):
         """Initialize Groq provider.
 
         Args:
-            model: Model name (llama-3.1-8b-instant, llama-3.3-70b-versatile).
+            model: Groq model ID.
             api_key: Groq API key. Falls back to GROQ_API_KEY env var.
             timeout: Request timeout.
             max_retries: Maximum retries on transient errors.
@@ -325,17 +310,17 @@ def get_groq(model: str | None = None, **kwargs: Any) -> GroqProvider:
     """Factory function for Groq provider.
 
     Args:
-        model: Model name. Defaults to llama-3.3-70b-versatile.
+        model: Model name. Defaults to the configured Groq model preset.
         **kwargs: Additional provider arguments.
 
     Returns:
         Configured GroqProvider instance.
     """
     return GroqProvider(
-        model=model or GROQ_FREE_MODELS["default"],
+        model=model or GROQ_MODELS["default"],
         **kwargs,
     )
 
 
 # Exported models for factory
-RECOMMENDED_MODELS = GROQ_FREE_MODELS
+RECOMMENDED_MODELS = GROQ_MODELS
