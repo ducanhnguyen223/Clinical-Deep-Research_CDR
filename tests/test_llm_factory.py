@@ -7,6 +7,7 @@ import pytest
 
 from cdr.config import LLMSettings, reset_settings
 from cdr.core.exceptions import ConfigurationError
+from cdr.llm.base import Message
 from cdr.llm.cerebras_provider import CEREBRAS_MODELS, CerebrasProvider
 from cdr.llm.cloudflare_provider import CLOUDFLARE_MODELS, CloudflareProvider
 from cdr.llm.factory import create_provider
@@ -92,6 +93,39 @@ def test_provider_defaults_match_config_and_model_maps():
     assert config_defaults["groq_model"] == GROQ_MODELS["default"]
     assert config_defaults["hf_model"] == RECOMMENDED_MODELS["default"]
     assert config_defaults["openai_model"] == signature(OpenAIProvider).parameters["model"].default
+
+
+@pytest.mark.parametrize(
+    ("model", "supports_sampling_parameters"),
+    [("gemini-3.8-flash", False), ("gemini-3.1-pro-preview", False), ("gemini-2.5-flash", True)],
+)
+@pytest.mark.parametrize("stream", [False, True])
+def test_gemini_request_args_match_model_generation_api(
+    model, supports_sampling_parameters, stream
+):
+    provider = GeminiProvider(model=model, api_key="test-key")
+
+    args = provider._request_args(
+        [Message(role="user", content="hello")],
+        temperature=0.4,
+        max_tokens=256,
+        kwargs={"top_p": 0.8, "top_k": 20, "candidate_count": 2, "reasoning_effort": "low"},
+        stream=stream,
+    )
+
+    assert args["model"] == model
+    assert args["messages"] == [{"role": "user", "content": "hello"}]
+    assert args["max_tokens"] == 256
+    assert args["reasoning_effort"] == "low"
+    assert args.get("stream", False) is stream
+
+    if supports_sampling_parameters:
+        assert args["temperature"] == 0.4
+        assert args["top_p"] == 0.8
+        assert args["top_k"] == 20
+        assert args["candidate_count"] == 2
+    else:
+        assert not {"temperature", "top_p", "top_k", "candidate_count"}.intersection(args)
 
 
 @pytest.mark.parametrize(
