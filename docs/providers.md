@@ -37,10 +37,12 @@ account and can change over time.
 The defaults updated in this audit were checked against current provider catalogs on 2026-10-08.
 The table lists starting defaults, not a guarantee that a model is enabled for every account.
 Availability and account limits can change; check the linked catalog and your account before use.
-On 2026-10-08, the former Cloudflare default `@cf/meta/llama-3.1-8b-instruct-fast` redirected to a
-"Model not available" page. The replacement `@cf/openai/gpt-oss-20b` is listed in the
-[current Workers AI catalog](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
-and supports OpenAI-compatible chat completions.
+On 2026-10-08, Cloudflare marked the former default
+[`@cf/meta/llama-3.1-8b-instruct`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
+and the old fast alias
+[`@cf/meta/llama-3.1-8b-instruct-fast`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/)
+as unavailable. The replacement [`@cf/openai/gpt-oss-20b`](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
+is listed in the Workers AI catalog and supports OpenAI-compatible chat completions.
 The Anthropic default is intentionally not changed in issue #77; it is coupled to the SDK migration in #119.
 
 Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate
