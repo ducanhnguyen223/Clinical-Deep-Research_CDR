@@ -29,7 +29,7 @@ account and can change over time.
 | Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-20b` | [GroqCloud](https://console.groq.com/docs/models) |
 | Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` | [Cerebras Inference](https://inference-docs.cerebras.ai/models) |
 | OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` | [OpenRouter](https://openrouter.ai/models) |
-| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/meta/llama-3.1-8b-instruct-fast` | [Workers AI](https://developers.cloudflare.com/workers-ai/models/) |
+| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/openai/gpt-oss-20b` | [Workers AI](https://developers.cloudflare.com/workers-ai/models/) |
 | Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` | [Inference Providers](https://huggingface.co/inference/models) |
 | OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` | [OpenAI API](https://developers.openai.com/api/docs/models) |
 | Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | Deferred to SDK migration [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119) | [Claude models](https://platform.claude.com/docs/en/models/overview) |
@@ -37,6 +37,10 @@ account and can change over time.
 The defaults were checked against these provider catalogs on 2026-10-07. The table lists starting
 defaults, not a guarantee that a model is enabled for every account. Availability and account
 limits can change; check the linked catalog and your account before use.
+On 2026-10-08, the former Cloudflare default `@cf/meta/llama-3.1-8b-instruct-fast` redirected to a
+"Model not available" page. The replacement `@cf/openai/gpt-oss-20b` is listed in the
+[current Workers AI catalog](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
+and supports OpenAI-compatible chat completions.
 The Anthropic default is intentionally not changed in issue #77; it is coupled to the SDK migration in #119.
 
 Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate
