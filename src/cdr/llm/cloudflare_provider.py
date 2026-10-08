@@ -37,8 +37,8 @@ MAX_DELAY = 30.0  # seconds
 
 # Cloudflare Workers AI models (using @cf prefix format)
 CLOUDFLARE_MODELS = {
-    "default": "@cf/meta/llama-3.1-8b-instruct-fast",  # Active fast variant
-    "fast": "@cf/meta/llama-3.1-8b-instruct-fast",  # Fastest
+    "default": "@cf/openai/gpt-oss-20b",  # Lower-latency model
+    "fast": "@cf/openai/gpt-oss-20b",  # Lower-latency model
     "large": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",  # Best quality
     "reasoning": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",  # Reasoning
     "qwen": "@cf/qwen/qwen3-30b-a3b-fp8",  # Qwen model
