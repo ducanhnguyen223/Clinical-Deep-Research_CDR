@@ -2,7 +2,7 @@
 OpenRouter LLM Provider
 
 Integration with OpenRouter API via OpenAI-compatible endpoint.
-OpenRouter provides unified access to 400+ AI models through a single API.
+OpenRouter provides unified access to models through a single API.
 
 Features:
 - Access to many free models (suffix :free)
@@ -13,10 +13,7 @@ Features:
 Base URL: https://openrouter.ai/api/v1
 Uses standard OpenAI SDK with modified base_url.
 
-Free tier limits (models ending in :free):
-- 20 requests/minute
-- 50 requests/day (if <10 credits purchased)
-- 1000 requests/day (if ≥10 credits purchased)
+Free-model rate limits vary by account; see https://openrouter.ai/docs/limits.
 """
 
 from __future__ import annotations
@@ -61,7 +58,7 @@ OPENROUTER_MODELS = {
 
 
 class OpenRouterProvider(BaseLLMProvider):
-    """OpenRouter LLM provider - unified access to 400+ models.
+    """OpenRouter LLM provider with unified access to many models.
 
     OpenRouter provides a single API endpoint for accessing many different
     AI models from various providers (OpenAI, Anthropic, Google, Meta, etc.).

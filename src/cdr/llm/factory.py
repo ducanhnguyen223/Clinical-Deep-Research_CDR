@@ -219,10 +219,10 @@ def create_provider_with_fallback(model: str | None = None, **kwargs) -> BaseLLM
 
     # Base order - will be reordered to put preferred first
     base_order = [
-        "groq",  # Fast, good limits
-        "cerebras",  # Fast, 1M/day
-        "openrouter",  # 400+ models
-        "gemini",  # 1M+/day but hitting quota
+        "groq",
+        "cerebras",
+        "openrouter",
+        "gemini",
         "huggingface",
         "openai",
         "anthropic",
