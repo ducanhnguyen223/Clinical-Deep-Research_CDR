@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import os
 import random
+import re
 import time
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
@@ -34,13 +35,13 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 30.0  # seconds
 
 
-# Gemini model presets
+# Gemini model presets listed in Google's current model catalog.
 GEMINI_MODELS = {
-    "default": "gemini-2.5-flash",  # Best balance of quality and speed
-    "fast": "gemini-2.5-flash-lite",  # Current low-latency model
-    "reasoning": "gemini-2.5-flash",  # Good reasoning capabilities
-    "large": "gemini-2.5-flash",  # Larger context
-    "pro": "gemini-2.5-pro",  # Most capable (may have limits)
+    "default": "gemini-3.8-flash",
+    "fast": "gemini-3.5-flash-lite",
+    "reasoning": "gemini-3.8-flash",
+    "large": "gemini-3.8-flash",
+    "pro": "gemini-3.1-pro-preview",
 }
 
 
@@ -57,7 +58,7 @@ class GeminiProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        model: str = "gemini-2.5-flash",
+        model: str = GEMINI_MODELS["default"],
         api_key: str | None = None,
         timeout: float = 120.0,  # Gemini can be slower
         max_retries: int = 3,
@@ -104,6 +105,36 @@ class GeminiProvider(BaseLLMProvider):
     def name(self) -> str:
         return "gemini"
 
+    def _request_args(
+        self,
+        messages: list[Message],
+        temperature: float,
+        max_tokens: int | None,
+        kwargs: dict[str, Any],
+        *,
+        stream: bool = False,
+    ) -> dict[str, Any]:
+        """Build chat-completion arguments compatible with the selected model."""
+        args: dict[str, Any] = {
+            **kwargs,
+            "model": self._model,
+            "messages": [message.to_dict() for message in messages],
+            "max_tokens": max_tokens or 8192,
+        }
+
+        # Gemini 3+ does not support legacy sampling controls. Keep temperature
+        # for older Gemini models, but omit these values for newer ones.
+        match = re.match(r"^gemini-(\d+)(?:\.|-|$)", self._model.lower())
+        if match and int(match.group(1)) >= 3:
+            for parameter in ("temperature", "top_p", "top_k", "candidate_count"):
+                args.pop(parameter, None)
+        else:
+            args["temperature"] = temperature
+
+        if stream:
+            args["stream"] = True
+        return args
+
     def complete(
         self,
         messages: list[Message],
@@ -124,11 +155,7 @@ class GeminiProvider(BaseLLMProvider):
         for attempt in range(MAX_RETRIES):
             try:
                 response = self._client.chat.completions.create(
-                    model=self._model,
-                    messages=[m.to_dict() for m in normalized],
-                    temperature=temperature,
-                    max_tokens=max_tokens or 8192,  # Gemini supports larger outputs
-                    **kwargs,
+                    **self._request_args(normalized, temperature, max_tokens, kwargs),
                 )
 
                 return LLMResponse(
@@ -186,11 +213,7 @@ class GeminiProvider(BaseLLMProvider):
         for attempt in range(MAX_RETRIES):
             try:
                 response = await self._async_client.chat.completions.create(
-                    model=self._model,
-                    messages=[m.to_dict() for m in normalized],
-                    temperature=temperature,
-                    max_tokens=max_tokens or 8192,
-                    **kwargs,
+                    **self._request_args(normalized, temperature, max_tokens, kwargs),
                 )
 
                 return LLMResponse(
@@ -240,12 +263,7 @@ class GeminiProvider(BaseLLMProvider):
 
         try:
             stream = self._client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in normalized],
-                temperature=temperature,
-                max_tokens=max_tokens or 8192,
-                stream=True,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs, stream=True),
             )
 
             for chunk in stream:
@@ -272,12 +290,7 @@ class GeminiProvider(BaseLLMProvider):
 
         try:
             stream = await self._async_client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in normalized],
-                temperature=temperature,
-                max_tokens=max_tokens or 8192,
-                stream=True,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs, stream=True),
             )
 
             async for chunk in stream:
