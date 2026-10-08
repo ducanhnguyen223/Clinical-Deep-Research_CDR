@@ -33,6 +33,9 @@ provider, model, and account; check those before running a large batch.
 | OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` |
 | Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | set `ANTHROPIC_MODEL` |
 
+The Anthropic default is intentionally unchanged and was not re-audited here because it is tied to
+the SDK migration in [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119).
+
 Gemini 2.5 remains served, but Google limits access to users who actively used those models before;
 new projects should check Google's current model catalog and select an accessible model. Defaults
 live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate models regularly.
