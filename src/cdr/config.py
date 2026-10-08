@@ -33,7 +33,7 @@ class LLMSettings(BaseSettings):
     # Gemini (Google AI Studio)
     gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
     google_api_key: str | None = Field(default=None, alias="GOOGLE_API_KEY")
-    gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
+    gemini_model: str = Field(default="gemini-3.8-flash", alias="GEMINI_MODEL")
 
     # Cerebras
     cerebras_api_key: str | None = Field(default=None, alias="CEREBRAS_API_KEY")

@@ -24,7 +24,7 @@ provider, model, and account; check those before running a large batch.
 
 | Provider | `.env` | Get a key | Default model |
 |---|---|---|---|
-| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-2.5-flash` |
+| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-3.8-flash` |
 | Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-120b` |
 | Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` |
 | OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` |
@@ -36,9 +36,12 @@ provider, model, and account; check those before running a large batch.
 The Anthropic default is intentionally unchanged and was not re-audited here because it is tied to
 the SDK migration in [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119).
 
-Gemini 2.5 remains served, but Google limits access to users who actively used those models before;
-new projects should check Google's current model catalog and select an accessible model. Defaults
-live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate models regularly.
+Google currently recommends Gemini 3.8 Flash and 3.5 Flash-Lite for new projects and limits access
+to Gemini 2.5 models to users who actively used them before. Gemini 3.x requests also omit legacy
+sampling parameters. Check [Google's model catalog](https://ai.google.dev/gemini-api/docs/models)
+and [Gemini 3 migration notes](https://ai.google.dev/gemini-api/docs/latest-model) for current
+availability and request requirements. Defaults live in `src/cdr/llm/*_provider.py` and
+`src/cdr/config.py`; providers deprecate models regularly.
 If a default starts returning 404s, that's a
 [good first issue](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/new?template=bug_report.yml).
 
