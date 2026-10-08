@@ -34,9 +34,9 @@ account and can change over time.
 | OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` | [OpenAI API](https://developers.openai.com/api/docs/models) |
 | Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | Deferred to SDK migration [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119) | [Claude models](https://platform.claude.com/docs/en/models/overview) |
 
-The defaults were checked against these provider catalogs on 2026-10-07. The table lists starting
-defaults, not a guarantee that a model is enabled for every account. Availability and account
-limits can change; check the linked catalog and your account before use.
+The defaults updated in this audit were checked against current provider catalogs on 2026-10-08.
+The table lists starting defaults, not a guarantee that a model is enabled for every account.
+Availability and account limits can change; check the linked catalog and your account before use.
 On 2026-10-08, the former Cloudflare default `@cf/meta/llama-3.1-8b-instruct-fast` redirected to a
 "Model not available" page. The replacement `@cf/openai/gpt-oss-20b` is listed in the
 [current Workers AI catalog](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
