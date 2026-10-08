@@ -12,29 +12,31 @@ make check-env    # tells you whether a usable key is present
 
 | Situation | Use |
 |---|---|
-| Just want to see it run | **Gemini**. The free tier from Google AI Studio has the most room. |
-| Want speed | **Groq** or **Cerebras**. Very fast, but free-tier daily limits run out after a few full runs. |
+| Just want to see it run | **Gemini**. Check current model access and pricing for your account. |
+| Want speed | **Groq** or **Cerebras**. Compare the current model and account limits before a full run. |
 | No quota, no key, full control | **A local model** through Ollama, vLLM or LM Studio (below). |
 | Need the best output quality and don't mind paying | **OpenAI** or **Anthropic**, or a large model via **OpenRouter** |
 
-A full pipeline run makes dozens of LLM calls. Free tiers will run out. That's not a bug in
-CDR, it's how free tiers work. When one runs out, switch providers or go local.
+A full pipeline run makes dozens of LLM calls. Cost, availability, and rate limits depend on the
+provider, model, and account; check those before running a large batch.
 
 ## Setup
 
 | Provider | `.env` | Get a key | Default model |
 |---|---|---|---|
 | Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-2.5-flash` |
-| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `llama-3.3-70b-versatile` |
-| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `llama-3.3-70b` |
+| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-120b` |
+| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` |
 | OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` |
-| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/meta/llama-3.1-8b-instruct` |
+| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/openai/gpt-oss-20b` |
 | Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` |
 | OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` |
 | Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | set `ANTHROPIC_MODEL` |
 
-Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate
-models regularly. If a default starts returning 404s, that's a
+Gemini 2.5 remains served, but Google limits access to users who actively used those models before;
+new projects should check Google's current model catalog and select an accessible model. Defaults
+live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate models regularly.
+If a default starts returning 404s, that's a
 [good first issue](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/new?template=bug_report.yml).
 
 ## Local models (no key, no quota)
@@ -64,7 +66,7 @@ show the floor rather than the ceiling.
 | Symptom | Meaning | Fix |
 |---|---|---|
 | HTTP 402 | Out of credits (Hugging Face, OpenRouter) | Add credits or switch provider |
-| HTTP 429 / "tokens per day" | Free-tier rate limit | Wait, or switch provider |
+| HTTP 429 / quota message | Provider or account rate limit | Wait, check the account's quota, or switch provider |
 | HTTP 404 on the model | Provider retired the model | Set the model env var to a current one, and open an issue |
 | Run finishes as `unpublishable` | The evidence didn't pass the gates | Working as intended. Read `status_reason` in the report |
 
