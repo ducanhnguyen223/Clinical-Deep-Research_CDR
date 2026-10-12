@@ -1,15 +1,4 @@
-"""
-Google Gemini LLM Provider
-
-Integration with Google AI Studio (Gemini) API via OpenAI-compatible endpoint.
-Gemini offers FREE tier with generous limits:
-- gemini-2.5-flash: Free tier available
-- gemini-2.0-flash: Free tier available
-- gemini-1.5-flash: Free tier available
-
-Base URL: https://generativelanguage.googleapis.com/v1beta/openai/
-Uses standard OpenAI SDK with modified base_url.
-"""
+"""Google Gemini provider using the OpenAI-compatible API endpoint."""
 
 from __future__ import annotations
 
@@ -38,18 +27,19 @@ BASE_DELAY = 1.0  # seconds
 MAX_DELAY = 30.0  # seconds
 
 
-# Gemini FREE tier models
-GEMINI_FREE_MODELS = {
-    "default": "gemini-2.5-flash",  # Best balance of quality and speed
-    "fast": "gemini-2.0-flash",  # Fastest
-    "reasoning": "gemini-2.5-flash",  # Good reasoning capabilities
-    "large": "gemini-2.5-flash",  # Larger context
-    "pro": "gemini-2.5-pro",  # Most capable (may have limits)
+GEMINI_MODELS = {
+    "default": "gemini-3.8-flash",
+    "fast": "gemini-3.5-flash-lite",
+    "reasoning": "gemini-3.8-flash",
+    "large": "gemini-3.8-flash",
 }
+
+# Backwards-compatible name; catalog presence does not imply free access.
+GEMINI_FREE_MODELS = GEMINI_MODELS
 
 
 class GeminiProvider(BaseLLMProvider):
-    """Google Gemini LLM provider - FREE tier via OpenAI-compatible API.
+    """Google Gemini LLM provider via the OpenAI-compatible API.
 
     Gemini provides OpenAI-compatible API endpoint for easy integration.
     This allows using the standard OpenAI SDK with just a base_url change.
@@ -61,7 +51,7 @@ class GeminiProvider(BaseLLMProvider):
 
     def __init__(
         self,
-        model: str = "gemini-2.5-flash",
+        model: str = "gemini-3.8-flash",
         api_key: str | None = None,
         timeout: float = 120.0,  # Gemini can be slower
         max_retries: int = 3,
@@ -69,7 +59,7 @@ class GeminiProvider(BaseLLMProvider):
         """Initialize Gemini provider.
 
         Args:
-            model: Model name (gemini-2.5-flash, gemini-2.0-flash, gemini-2.5-pro).
+            model: Model ID from Google's current Gemini API catalog.
             api_key: Google AI API key. Falls back to GOOGLE_API_KEY or GEMINI_API_KEY env var.
             timeout: Request timeout.
             max_retries: Maximum retries on transient errors.

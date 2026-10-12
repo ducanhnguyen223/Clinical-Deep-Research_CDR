@@ -3,13 +3,13 @@ LLM Factory
 
 Factory for creating LLM provider instances based on configuration.
 
-PROVIDER ORDER (all with FREE tiers):
-1. Gemini (Google AI Studio) - 1M+ tokens/day free
-2. Cerebras - 1M tokens/day, 60K TPM free
-3. Groq - 14.4K req/day, fast inference
-4. OpenRouter - 400+ models, free tier available
-5. HuggingFace - Qwen/Llama via Router API
-6. OpenAI/Anthropic - Paid fallbacks
+PROVIDER ORDER:
+1. Gemini (Google AI Studio)
+2. Cerebras
+3. Groq
+4. OpenRouter
+5. Hugging Face Inference Providers
+6. OpenAI/Anthropic
 
 Automatic fallback: If one provider hits rate limits or fails,
 the system automatically tries the next available provider.
@@ -39,7 +39,7 @@ def create_provider(
     Args:
         provider: Provider name ('gemini', 'cerebras', 'cloudflare', 'openrouter',
                   'huggingface', 'groq', 'openai', 'anthropic').
-                  Defaults to 'gemini' (FREE tier via Google AI Studio).
+                  Defaults to 'gemini' (Google AI Studio).
         model: Model name. Defaults to provider-specific default.
         **kwargs: Additional provider-specific arguments.
 
@@ -52,12 +52,12 @@ def create_provider(
     """
     settings = get_settings()
 
-    # DEFAULT: Gemini (FREE PROVIDER - generous limits)
+    # Default to the configured provider; quota and billing are provider-specific.
     if provider is None:
         provider = getattr(settings.llm, "default_provider", "gemini")
 
     if provider == "gemini":
-        from cdr.llm.gemini_provider import GEMINI_FREE_MODELS, GeminiProvider
+        from cdr.llm.gemini_provider import GEMINI_MODELS, GeminiProvider
 
         # Use settings first, then fallback to os.getenv
         api_key = (
@@ -72,11 +72,11 @@ def create_provider(
                 "Google AI API key not configured. Set GOOGLE_API_KEY or GEMINI_API_KEY environment variable."
             )
 
-        default_model = GEMINI_FREE_MODELS["default"]  # gemini-2.5-flash
+        default_model = GEMINI_MODELS["default"]
         return GeminiProvider(model=model or default_model, api_key=api_key, **kwargs)
 
     elif provider == "cerebras":
-        from cdr.llm.cerebras_provider import CEREBRAS_FREE_MODELS, CerebrasProvider
+        from cdr.llm.cerebras_provider import CEREBRAS_MODELS, CerebrasProvider
 
         api_key = (
             kwargs.pop("api_key", None)
@@ -88,7 +88,7 @@ def create_provider(
                 "Cerebras API key not configured. Set CEREBRAS_API_KEY environment variable."
             )
 
-        default_model = CEREBRAS_FREE_MODELS["default"]  # llama-3.3-70b
+        default_model = CEREBRAS_MODELS["default"]
         return CerebrasProvider(model=model or default_model, api_key=api_key, **kwargs)
 
     elif provider == "cloudflare":
@@ -113,7 +113,7 @@ def create_provider(
                 "Cloudflare Account ID not configured. Set CLOUDFLARE_ACCOUNT_ID environment variable."
             )
 
-        default_model = CLOUDFLARE_MODELS["default"]  # @cf/meta/llama-3.1-8b-instruct
+        default_model = CLOUDFLARE_MODELS["default"]
         return CloudflareProvider(
             model=model or default_model, api_key=api_key, account_id=account_id, **kwargs
         )
@@ -131,7 +131,7 @@ def create_provider(
                 "OpenRouter API key not configured. Set OPENROUTER_API_KEY environment variable."
             )
 
-        default_model = OPENROUTER_MODELS["default"]  # meta-llama/llama-3.1-8b-instruct:free
+        default_model = OPENROUTER_MODELS["default"]
         return OpenRouterProvider(model=model or default_model, api_key=api_key, **kwargs)
 
     elif provider == "huggingface":
@@ -145,13 +145,13 @@ def create_provider(
                 "HuggingFace API key not configured. Set HF_TOKEN environment variable."
             )
 
-        # Use recommended model if not specified (FREE high-capacity models)
-        default_model = RECOMMENDED_MODELS["default"]  # Qwen/Qwen2.5-72B-Instruct
+        # Use a recommended model if one was not specified.
+        default_model = RECOMMENDED_MODELS["default"]
 
         return HuggingFaceProvider(model=model or default_model, api_key=api_key, **kwargs)
 
     elif provider == "groq":
-        from cdr.llm.groq_provider import GROQ_FREE_MODELS, GroqProvider
+        from cdr.llm.groq_provider import GROQ_MODELS, GroqProvider
 
         api_key = kwargs.pop("api_key", None) or getattr(settings.llm, "groq_api_key", None)
         if not api_key:
@@ -161,8 +161,8 @@ def create_provider(
                 "Groq API key not configured. Set GROQ_API_KEY environment variable."
             )
 
-        # Use settings model first, then fallback to GROQ_FREE_MODELS
-        default_model = getattr(settings.llm, "groq_model", None) or GROQ_FREE_MODELS["large"]
+        # Use the configured model first, then the catalog default.
+        default_model = getattr(settings.llm, "groq_model", None) or GROQ_MODELS["default"]
 
         return GroqProvider(model=model or default_model, api_key=api_key, **kwargs)
 
@@ -268,32 +268,32 @@ def get_default_provider() -> BaseLLMProvider:
 
 # Convenience aliases for each provider
 def get_gemini(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get Gemini provider (FREE tier - 1M+ tokens/day)."""
+    """Get Gemini provider."""
     return create_provider("gemini", model, **kwargs)
 
 
 def get_cerebras(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get Cerebras provider (FREE tier - 1M tokens/day, ultra-fast)."""
+    """Get Cerebras provider."""
     return create_provider("cerebras", model, **kwargs)
 
 
 def get_cloudflare(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get Cloudflare Workers AI provider (FREE tier - 10K neurons/day)."""
+    """Get Cloudflare Workers AI provider."""
     return create_provider("cloudflare", model, **kwargs)
 
 
 def get_openrouter(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get OpenRouter provider (400+ models, free tier available)."""
+    """Get OpenRouter provider."""
     return create_provider("openrouter", model, **kwargs)
 
 
 def get_huggingface(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get HuggingFace provider (FREE tier via Router API)."""
+    """Get Hugging Face Inference Provider."""
     return create_provider("huggingface", model, **kwargs)
 
 
 def get_groq(model: str | None = None, **kwargs) -> BaseLLMProvider:
-    """Get Groq provider (FREE tier - 14.4K req/day)."""
+    """Get Groq provider."""
     return create_provider("groq", model, **kwargs)
 
 
