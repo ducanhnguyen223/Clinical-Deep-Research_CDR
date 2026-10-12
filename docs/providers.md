@@ -26,7 +26,7 @@ that depends on your provider and account. When that happens, switch providers o
 |---|---|---|---|
 | Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | [`gemini-3.8-flash`](https://ai.google.dev/gemini-api/docs/models) |
 | Groq | `GROQ_API_KEY` | https://console.groq.com/keys | [`openai/gpt-oss-20b`](https://console.groq.com/docs/models) |
-| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | [`gpt-oss-120b`](https://inference-docs.cerebras.ai/integrations/code-mcp) |
+| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | [`gpt-oss-120b`](https://api.cerebras.ai/public/v1/models) |
 | OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | [`meta-llama/llama-3.1-8b-instruct`](https://openrouter.ai/api/v1/models) |
 | Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | [`@cf/meta/llama-3.2-3b-instruct`](https://developers.cloudflare.com/workers-ai/models/llama-3.2-3b-instruct/) |
 | Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | [`Qwen/Qwen2.5-72B-Instruct`](https://huggingface.co/docs/inference-providers/main/hub-api) |
@@ -36,7 +36,16 @@ that depends on your provider and account. When that happens, switch providers o
 The hosted model catalog was checked on **2026-10-13**. Catalog presence does not guarantee
 access, price, or quota for a particular account or region. The Anthropic default was deliberately
 left out of this audit while its SDK migration is handled in [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119),
-as requested by a maintainer. Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`.
+as requested by a maintainer. The audit compared each entry in the provider model maps against the
+providers' first-party sources: the [Gemini model catalog](https://ai.google.dev/gemini-api/docs/models),
+[Groq's supported models](https://console.groq.com/docs/models),
+[Cerebras' public models API](https://api.cerebras.ai/public/v1/models),
+[OpenRouter's models API](https://openrouter.ai/api/v1/models), and the
+[Workers AI model catalog](https://developers.cloudflare.com/workers-ai/models/). For Hugging Face,
+each model's `inferenceProviderMapping` was checked and retained only when at least one provider
+reported `live`. The Cerebras endpoint currently lists only `gpt-oss-120b` and `qwen-3.8-27b`,
+so the map no longer recommends IDs absent from that catalog. Defaults live in
+`src/cdr/llm/*_provider.py` and `src/cdr/config.py`.
 Providers deprecate models regularly. If a default starts returning 404s, that's a
 [good first issue](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/new?template=bug_report.yml).
 

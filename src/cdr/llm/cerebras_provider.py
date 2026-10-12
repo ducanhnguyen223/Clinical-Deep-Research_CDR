@@ -29,8 +29,8 @@ MAX_DELAY = 60.0  # seconds
 
 CEREBRAS_MODELS = {
     "default": "gpt-oss-120b",
-    "fast": "llama3.1-8b",
-    "reasoning": "zai-glm-4.7",
+    "fast": "gpt-oss-120b",
+    "reasoning": "qwen-3.8-27b",
     "large": "gpt-oss-120b",
 }
 
