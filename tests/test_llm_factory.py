@@ -95,6 +95,47 @@ def test_provider_defaults_match_config_and_model_maps():
     assert config_defaults["openai_model"] == signature(OpenAIProvider).parameters["model"].default
 
 
+@pytest.mark.parametrize("stream", [False, True])
+@pytest.mark.parametrize("reasoning_effort", ["none", "low"])
+def test_openai_gpt6_luna_request_args_follow_model_constraints(stream, reasoning_effort):
+    provider = OpenAIProvider(model="gpt-6-luna", api_key="test-key")
+
+    args = provider._request_args(
+        [Message(role="user", content="hello")],
+        temperature=0.4,
+        max_tokens=256,
+        kwargs={"top_p": 0.8, "reasoning_effort": reasoning_effort},
+        stream=stream,
+    )
+
+    assert args["model"] == "gpt-6-luna"
+    assert args["messages"] == [{"role": "user", "content": "hello"}]
+    assert args["max_completion_tokens"] == 256
+    assert "max_tokens" not in args
+    assert args.get("stream", False) is stream
+
+    if reasoning_effort == "none":
+        assert args["temperature"] == 0.4
+        assert args["top_p"] == 0.8
+    else:
+        assert not {"temperature", "top_p", "top_logprobs", "logprobs"}.intersection(args)
+
+
+def test_openai_gpt6_luna_defaults_to_function_calling_compatible_effort():
+    provider = OpenAIProvider(model="gpt-6-luna", api_key="test-key")
+
+    args = provider._request_args(
+        [Message(role="user", content="hello")],
+        temperature=0.0,
+        max_tokens=None,
+        kwargs={"tools": [{"type": "function", "function": {"name": "lookup"}}]},
+    )
+
+    assert args["reasoning_effort"] == "none"
+    assert args["tools"]
+    assert "max_completion_tokens" not in args
+
+
 @pytest.mark.parametrize(
     ("model", "supports_sampling_parameters"),
     [("gemini-3.8-flash", False), ("gemini-3.1-pro-preview", False), ("gemini-2.5-flash", True)],

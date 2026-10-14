@@ -31,18 +31,24 @@ account and can change over time.
 | OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` | [OpenRouter](https://openrouter.ai/models) |
 | Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/openai/gpt-oss-20b` | [Workers AI](https://developers.cloudflare.com/workers-ai/models/) |
 | Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` | [Inference Providers](https://huggingface.co/inference/models) |
-| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` | [OpenAI API](https://developers.openai.com/api/docs/models) |
+| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-6-luna` | [OpenAI API](https://developers.openai.com/api/docs/models) |
 | Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | Deferred to SDK migration [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119) | [Claude models](https://platform.claude.com/docs/en/models/overview) |
 
-The defaults updated in this audit were checked against current provider catalogs on 2026-10-08.
+The defaults updated in this audit were checked against current provider catalogs on 2026-10-15.
 The table lists starting defaults, not a guarantee that a model is enabled for every account.
 Availability and account limits can change; check the linked catalog and your account before use.
-On 2026-10-08, Cloudflare marked the former default
+On 2026-10-15, Cloudflare's model catalog still lists the replacement
+[`@cf/openai/gpt-oss-20b`](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
+and also lists the other Cloudflare model IDs in the provider map. The catalog marks the former default
 [`@cf/meta/llama-3.1-8b-instruct`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
 and the old fast alias
 [`@cf/meta/llama-3.1-8b-instruct-fast`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/)
-as unavailable. The replacement [`@cf/openai/gpt-oss-20b`](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
-is listed in the Workers AI catalog and supports OpenAI-compatible chat completions.
+as unavailable. The replacement supports OpenAI-compatible chat completions.
+OpenAI's [deprecation notice](https://developers.openai.com/api/docs/deprecations) says GPT-4o
+will be removed on 2027-01-14 and recommends `gpt-6-luna`; the default now uses that replacement.
+Following the [GPT-6 migration guidance](https://developers.openai.com/api/docs/guides/latest-model),
+the adapter selects `reasoning_effort="none"` for Chat Completions so deterministic sampling and
+function calling remain compatible, and maps the output limit to `max_completion_tokens`.
 The Anthropic default is intentionally not changed in issue #77; it is coupled to the SDK migration in #119.
 
 Defaults live in `src/cdr/llm/*_provider.py` and `src/cdr/config.py`. Providers deprecate

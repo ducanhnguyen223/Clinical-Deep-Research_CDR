@@ -24,14 +24,14 @@ class OpenAIProvider(BaseLLMProvider):
     OpenAI API provider.
 
     Supports:
-        - GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo
+        - GPT-6 Luna and compatible Chat Completions models
         - Streaming responses
         - JSON mode
     """
 
     def __init__(
         self,
-        model: str = "gpt-4o",
+        model: str = "gpt-6-luna",
         api_key: str | None = None,
         base_url: str | None = None,
         organization: str | None = None,
@@ -42,7 +42,7 @@ class OpenAIProvider(BaseLLMProvider):
         Initialize OpenAI provider.
 
         Args:
-            model: Model name (gpt-4o, gpt-4-turbo, etc.).
+            model: OpenAI API model name.
             api_key: OpenAI API key.
             base_url: Custom base URL (for Azure or proxies).
             organization: OpenAI organization ID.
@@ -76,6 +76,44 @@ class OpenAIProvider(BaseLLMProvider):
     def name(self) -> str:
         return "openai"
 
+    def _request_args(
+        self,
+        messages: list[Message],
+        temperature: float,
+        max_tokens: int | None,
+        kwargs: dict[str, Any],
+        *,
+        stream: bool = False,
+    ) -> dict[str, Any]:
+        """Build Chat Completions arguments for the selected OpenAI model."""
+        args: dict[str, Any] = {
+            **kwargs,
+            "model": self._model,
+            "messages": [message.to_dict() for message in messages],
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+
+        if self._model.lower().startswith("gpt-6-luna"):
+            # GPT-6 Luna accepts function calling in Chat Completions with effort=none.
+            # Its API uses max_completion_tokens; sampling controls are valid only when
+            # reasoning_effort is none. See the OpenAI GPT-6 migration guidance.
+            effort = args.setdefault("reasoning_effort", "none")
+            if "max_completion_tokens" not in args:
+                output_limit = args.pop("max_tokens")
+                if output_limit is not None:
+                    args["max_completion_tokens"] = output_limit
+            else:
+                args.pop("max_tokens", None)
+
+            if effort != "none":
+                for parameter in ("temperature", "top_p", "top_logprobs", "logprobs"):
+                    args.pop(parameter, None)
+
+        if stream:
+            args["stream"] = True
+        return args
+
     def complete(
         self,
         messages: list[Message],
@@ -88,11 +126,7 @@ class OpenAIProvider(BaseLLMProvider):
         normalized = self._normalize_messages(messages)
         try:
             response = self._client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in normalized],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs),
             )
 
             return LLMResponse(
@@ -133,11 +167,7 @@ class OpenAIProvider(BaseLLMProvider):
         normalized = self._normalize_messages(messages)
         try:
             response = await self._async_client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in normalized],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs),
             )
 
             return LLMResponse(
@@ -175,13 +205,9 @@ class OpenAIProvider(BaseLLMProvider):
     ) -> Iterator[StreamChunk]:
         """Streaming completion."""
         try:
+            normalized = self._normalize_messages(messages)
             stream = self._client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in messages],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=True,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs, stream=True),
             )
 
             for chunk in stream:
@@ -204,13 +230,9 @@ class OpenAIProvider(BaseLLMProvider):
     ) -> AsyncIterator[StreamChunk]:
         """Async streaming completion."""
         try:
+            normalized = self._normalize_messages(messages)
             stream = await self._async_client.chat.completions.create(
-                model=self._model,
-                messages=[m.to_dict() for m in messages],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=True,
-                **kwargs,
+                **self._request_args(normalized, temperature, max_tokens, kwargs, stream=True),
             )
 
             async for chunk in stream:
