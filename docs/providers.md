@@ -22,19 +22,33 @@ provider, model, and account; check those before running a large batch.
 
 ## Setup
 
-| Provider | `.env` | Get a key | Default model |
-|---|---|---|---|
-| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-3.8-flash` |
-| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-120b` |
-| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` |
-| OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` |
-| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/openai/gpt-oss-20b` |
-| Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` |
-| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-4o` |
-| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | Defaults to `claude-sonnet-5-5`; set `ANTHROPIC_MODEL` to override |
+| Provider | `.env` | Get a key | Default model | Official model catalog |
+|---|---|---|---|---|
+| Gemini | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | https://aistudio.google.com/apikey | `gemini-3.8-flash` | [Gemini API](https://ai.google.dev/gemini-api/docs/models) |
+| Groq | `GROQ_API_KEY` | https://console.groq.com/keys | `openai/gpt-oss-120b` | [GroqCloud](https://console.groq.com/docs/models) |
+| Cerebras | `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | `qwen-3.8-27b` | [Cerebras Inference](https://inference-docs.cerebras.ai/models) |
+| OpenRouter | `OPENROUTER_API_KEY` | https://openrouter.ai/keys | `meta-llama/llama-3.1-8b-instruct` | [OpenRouter](https://openrouter.ai/models) |
+| Cloudflare Workers AI | `CLOUDFLARE_API_KEY` + `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → AI | `@cf/openai/gpt-oss-20b` | [Workers AI](https://developers.cloudflare.com/workers-ai/models/) |
+| Hugging Face | `HF_TOKEN` (optional `HF_ENDPOINT_URL`) | https://huggingface.co/settings/tokens | `Qwen/Qwen2.5-72B-Instruct` | [Inference Providers](https://huggingface.co/inference/models) |
+| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys | `gpt-6-luna` | [OpenAI API](https://developers.openai.com/api/docs/models) |
+| Anthropic | `ANTHROPIC_API_KEY` | https://console.anthropic.com | `claude-sonnet-5-5` | [Claude models](https://platform.claude.com/docs/en/models/overview) |
 
-The Anthropic default is intentionally unchanged and was not re-audited here because it is tied to
-the SDK migration in [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119).
+The defaults updated in this audit were checked against current provider catalogs on 2026-10-16. The
+Anthropic default is carried forward from the SDK migration tracked in [#119](https://github.com/BlueRingsLabs/Clinical-Deep-Research_CDR/issues/119); it was not changed in this audit.
+The table lists starting defaults, not a guarantee that a model is enabled for every account.
+Availability and account limits can change; check the linked catalog and your account before use.
+Cloudflare's model catalog lists the replacement
+[`@cf/openai/gpt-oss-20b`](https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/)
+and also lists the other Cloudflare model IDs in the provider map. The catalog marks the former default
+[`@cf/meta/llama-3.1-8b-instruct`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
+and the old fast alias
+[`@cf/meta/llama-3.1-8b-instruct-fast`](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/)
+as unavailable. The replacement supports OpenAI-compatible chat completions.
+OpenAI's [deprecation notice](https://developers.openai.com/api/docs/deprecations) says GPT-4o
+will be removed on 2027-01-14 and recommends `gpt-6-luna`; the default now uses that replacement.
+Following the [GPT-6 migration guidance](https://developers.openai.com/api/docs/guides/latest-model),
+the adapter selects `reasoning_effort="none"` for Chat Completions so deterministic sampling and
+function calling remain compatible, and maps the output limit to `max_completion_tokens`.
 
 Google currently recommends Gemini 3.8 Flash and 3.5 Flash-Lite for new projects and limits access
 to Gemini 2.5 models to users who actively used them before. Gemini 3.x requests also omit legacy

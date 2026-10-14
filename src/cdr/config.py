@@ -47,7 +47,7 @@ class LLMSettings(BaseSettings):
 
     # OpenAI (FALLBACK)
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-6-luna", alias="OPENAI_MODEL")
     # Any OpenAI-compatible server: Ollama, vLLM, LM Studio, llama.cpp server...
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
     openai_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
