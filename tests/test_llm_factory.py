@@ -13,6 +13,7 @@ from cdr.llm.factory import create_provider
 from cdr.llm.gemini_provider import GEMINI_MODELS, GeminiProvider
 from cdr.llm.groq_provider import GROQ_MODELS, GroqProvider
 from cdr.llm.huggingface_provider import RECOMMENDED_MODELS
+from cdr.llm.openai_provider import OpenAIProvider
 from cdr.llm.openrouter_provider import OPENROUTER_MODELS, OpenRouterProvider
 
 PROVIDER_ENV_VARS = [
