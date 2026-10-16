@@ -153,6 +153,41 @@ class TestClinicalTrialsClient:
         """Test client initializes correctly."""
         assert client._max_results == 50
 
+    def test_parse_study_preserves_clinical_trials_metadata(self, client):
+        """ClinicalTrials.gov metadata survives normalization into a Record."""
+        study = {
+            "protocolSection": {
+                "identificationModule": {
+                    "nctId": "NCT01234567",
+                    "officialTitle": "A trial of an example intervention",
+                },
+                "descriptionModule": {"briefSummary": "Example trial summary."},
+                "statusModule": {
+                    "overallStatus": "COMPLETED",
+                    "startDateStruct": {"date": "2020-01"},
+                },
+                "designModule": {
+                    "studyType": "INTERVENTIONAL",
+                    "phases": ["PHASE3"],
+                    "enrollmentInfo": {"count": 12000},
+                },
+                "conditionsModule": {"conditions": ["Type 2 Diabetes", "Hypertension"]},
+            }
+        }
+
+        record = client._parse_study(study)
+
+        assert record is not None
+        assert record.study_status == "COMPLETED"
+        assert record.study_type == "INTERVENTIONAL"
+        assert record.study_phases == ["PHASE3"]
+        assert record.keywords == ["Type 2 Diabetes", "Hypertension"]
+        assert record.enrollment_count == 12000
+        assert record.start_date == "2020-01"
+        # Trial start dates/types are not publication years/types.
+        assert record.year is None
+        assert record.publication_type == []
+
     def test_ct_search_filters_to_params_study_type(self):
         """Test CTSearchFilters.to_params() with study type."""
         from cdr.retrieval.ct_client import CTSearchFilters

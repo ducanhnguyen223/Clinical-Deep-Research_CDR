@@ -372,15 +372,16 @@ class ClinicalTrialsClient:
 
             # Status
             status_module = protocol.get("statusModule", {})
-            overall_status = status_module.get("overallStatus")  # noqa: F841 — loose end: parsed but not used yet
+            study_status = status_module.get("overallStatus")
+            start_date = status_module.get("startDateStruct", {}).get("date")
 
             # Study design
             design_module = protocol.get("designModule", {})
-            study_type_raw = design_module.get("studyType", "")  # noqa: F841 — loose end: parsed but not used yet
-            phases = design_module.get("phases", [])  # noqa: F841 — loose end: parsed but not used yet
+            study_type = design_module.get("studyType")
+            study_phases = design_module.get("phases") or []
 
             # Conditions and interventions
-            conditions = protocol.get("conditionsModule", {}).get("conditions", [])  # noqa: F841 — loose end: parsed but not used yet
+            conditions = protocol.get("conditionsModule", {}).get("conditions") or []
 
             interventions = []
             for intervention in protocol.get("armsInterventionsModule", {}).get(
@@ -399,10 +400,7 @@ class ClinicalTrialsClient:
                 sponsors.append(lead["name"])
 
             # Enrollment
-            enrollment = design_module.get("enrollmentInfo", {}).get("count")  # noqa: F841 — loose end: parsed but not used yet
-
-            # Dates
-            start_date = status_module.get("startDateStruct", {}).get("date")  # noqa: F841 — loose end: parsed but not used yet
+            enrollment_count = design_module.get("enrollmentInfo", {}).get("count")
 
             # Compute content hash for deduplication
             content_hash = Record.compute_hash(title, abstract, None)
@@ -414,6 +412,12 @@ class ClinicalTrialsClient:
                 nct_id=nct_id,
                 title=title,
                 abstract=abstract,
+                study_status=study_status,
+                study_type=study_type,
+                study_phases=study_phases,
+                keywords=conditions,
+                enrollment_count=enrollment_count,
+                start_date=start_date,
             )
 
         except Exception as e:

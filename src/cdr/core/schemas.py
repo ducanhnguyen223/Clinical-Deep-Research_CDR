@@ -214,6 +214,23 @@ class Record(BaseModel):
     journal: str | None = None
     publication_type: list[str] = Field(default_factory=list)
 
+    # Trial metadata (optional for records from other sources)
+    study_status: str | None = Field(
+        default=None, description="Clinical trial status reported by the source"
+    )
+    study_type: str | None = Field(
+        default=None, description="Study design/type reported by the source"
+    )
+    study_phases: list[str] = Field(
+        default_factory=list, description="Clinical trial phases reported by the source"
+    )
+    enrollment_count: int | None = Field(
+        default=None, ge=0, description="Reported number of enrolled participants"
+    )
+    start_date: str | None = Field(
+        default=None, description="Study start date as reported by the source"
+    )
+
     # Content
     abstract: str | None = None
     keywords: list[str] = Field(default_factory=list)
