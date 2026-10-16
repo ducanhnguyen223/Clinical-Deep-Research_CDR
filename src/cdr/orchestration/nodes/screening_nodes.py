@@ -7,12 +7,16 @@ Extracted from graph.py monolith.
 
 from __future__ import annotations
 
+import logging
+
 from langchain_core.runnables import RunnableConfig
 
 from cdr.core.schemas import CDRState, PRISMACounts
 from cdr.observability.metrics import metrics
 from cdr.observability.tracer import tracer
 from cdr.orchestration.nodes._helpers import _calculate_pico_match_score, _extract_pico_terms
+
+logger = logging.getLogger(__name__)
 
 
 async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
@@ -69,7 +73,7 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
                 model=model,
             )
 
-            print(f"[Screen] Using LLM-based screening for {len(state.retrieved_records)} records")
+            logger.debug("Using LLM-based screening for %d records", len(state.retrieved_records))
 
             for record in state.retrieved_records:
                 decision = screener.screen_record(state.pico, record)
@@ -86,8 +90,11 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
 
             # CRITICAL: Block heuristic screening for Research-grade (Level 2+)
             if dod_level >= 2:
-                print(f"[Screen] ❌ ERROR: No LLM available for Research-grade (Level {dod_level})")
-                print("[Screen] Heuristic screening is insufficient for Level 2+ per PRISMA 2020")
+                logger.error(
+                    "LLM screening required for research-grade DoD Level %d; "
+                    "heuristic screening is insufficient per PRISMA 2020",
+                    dod_level,
+                )
                 span.set_attribute("screening_blocked", True)
                 span.set_attribute("screening_error", f"LLM_REQUIRED_FOR_LEVEL_{dod_level}")
 
@@ -103,9 +110,10 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
                 }
 
             # Level 1 (exploratory) - allow heuristic fallback with warning
-            print("[Screen] ⚠️ WARNING: No LLM available - using heuristic screening (Level 1 only)")
-            print(
-                "[Screen] For Research-grade reviews, configure LLM provider or use manual screening"
+            logger.warning(
+                "No LLM provider configured; using heuristic screening for DoD Level 1 "
+                "(exploratory only). Configure an LLM provider or use manual screening "
+                "for research-grade reviews"
             )
             span.set_attribute("screening_warning", "heuristic_fallback_level1_only")
 
@@ -169,7 +177,9 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
                     excluded_count += 1
                 screened.append(decision)
 
-        print(f"[Screen] Included: {included_count}, Excluded: {excluded_count}")
+        logger.debug(
+            "Screening complete: Included: %d, Excluded: %d", included_count, excluded_count
+        )
         span.set_attribute("included_count", included_count)
         span.set_attribute("excluded_count", excluded_count)
         span.set_attribute("screening_method", "llm" if llm else "heuristic")
@@ -240,8 +250,10 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
                     gate_excluded_count += 1
                     included_count -= 1
                     excluded_count += 1
-                    print(
-                        f"[Screen] Gate excluded {record.pmid or record.record_id}: {reason_text}"
+                    logger.warning(
+                        "Evidence gate excluded record %s: %s",
+                        record.pmid or record.record_id,
+                        reason_text,
                     )
                 elif gate_result.overall_result == GateResult.WARN:
                     # Keep included but flag in state
@@ -253,9 +265,10 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
             screened = updated_screened
 
             if gate_excluded_count > 0 or gate_warned_count > 0:
-                print(
-                    f"[Screen] Evidence gates: {gate_excluded_count} excluded, "
-                    f"{gate_warned_count} warned"
+                logger.warning(
+                    "Evidence gates: %d excluded, %d warned",
+                    gate_excluded_count,
+                    gate_warned_count,
                 )
                 span.set_attribute("gate_excluded", gate_excluded_count)
                 span.set_attribute("gate_warned", gate_warned_count)
@@ -270,7 +283,7 @@ async def screen_node(state: CDRState, config: RunnableConfig) -> dict:
                 exclusion_reasons_count[reason_key] = exclusion_reasons_count.get(reason_key, 0) + 1
 
         if exclusion_reasons_count:
-            print(f"[Screen] Exclusion breakdown: {exclusion_reasons_count}")
+            logger.debug("Exclusion breakdown: %s", exclusion_reasons_count)
             span.set_attribute("exclusion_breakdown", str(exclusion_reasons_count))
 
         # Update PRISMA - CRITICAL: Preserve all counts from previous state
@@ -333,7 +346,7 @@ async def parse_documents_node(state: CDRState, config: RunnableConfig) -> dict:
         records_with_snippet = []
 
         included_records = state.get_included_records()
-        print(f"[ParseDocs] Processing {len(included_records)} included records")
+        logger.debug("Processing %d included records", len(included_records))
         span.set_attribute("enable_fulltext", enable_fulltext)
 
         # Initialize fulltext client if enabled
@@ -343,9 +356,9 @@ async def parse_documents_node(state: CDRState, config: RunnableConfig) -> dict:
                 from cdr.retrieval.fulltext_client import FullTextClient
 
                 fulltext_client = FullTextClient()
-                print("[ParseDocs] Full-text retrieval enabled (PMC fallback)")
+                logger.debug("Full-text retrieval enabled with PMC fallback")
             except ImportError:
-                print("[ParseDocs] ⚠️ Full-text client not available, using abstracts only")
+                logger.warning("Full-text client unavailable; using abstracts only")
 
         for record in included_records:
             abstract = record.abstract or ""
@@ -373,23 +386,31 @@ async def parse_documents_node(state: CDRState, config: RunnableConfig) -> dict:
                         text_source = "pmc_fulltext"
                         record_sections = ft_result.sections
                         fulltext_retrieved += 1
-                        print(
-                            f"[ParseDocs] ✓ Record {record.record_id}: Retrieved from PMC ({ft_result.pmcid})"
+                        logger.debug(
+                            "Record %s retrieved from PMC full text (%s)",
+                            record.record_id,
+                            ft_result.pmcid,
                         )
                     elif ft_result.source == "abstract_fallback" and ft_result.full_text:
                         document_text = ft_result.full_text
                         text_source = "abstract_fallback"
                     # else: keep original abstract as document_text
                 except Exception as e:
-                    print(f"[ParseDocs] ⚠️ PMC retrieval failed for {record.record_id}: {e}")
+                    logger.warning(
+                        "PMC full-text retrieval failed for record %s: %s",
+                        record.record_id,
+                        e,
+                    )
                     # Continue with abstract fallback
 
             # CRITICAL: Check minimum content requirement per PRISMA/
             if not document_text or len(document_text) < 10:
                 reports_not_retrieved += 1
-                print(
-                    f"[ParseDocs] ⚠️ Record {record.record_id}: No retrievable content "
-                    f"(text length: {len(document_text)}) - counted as 'report not retrieved'"
+                logger.warning(
+                    "Record %s has no retrievable content (text length: %d); "
+                    "counted as reports_not_retrieved",
+                    record.record_id,
+                    len(document_text),
                 )
                 continue
 
@@ -456,13 +477,14 @@ async def parse_documents_node(state: CDRState, config: RunnableConfig) -> dict:
         span.set_attribute("snippets_count", len(snippets))
         span.set_attribute("reports_not_retrieved", reports_not_retrieved)
         span.set_attribute("fulltext_retrieved", fulltext_retrieved)
-        print(f"[ParseDocs] Parsed {len(parsed)} documents, extracted {len(snippets)} snippets")
+        logger.debug("Parsed %d documents and extracted %d snippets", len(parsed), len(snippets))
         if fulltext_retrieved > 0:
-            print(f"[ParseDocs] ✓ {fulltext_retrieved} records retrieved from PMC full-text")
+            logger.debug("Retrieved %d records from PMC full text", fulltext_retrieved)
         if reports_not_retrieved > 0:
-            print(
-                f"[ParseDocs] ⚠️ {reports_not_retrieved} records without retrievable content "
-                f"(counted as 'reports not retrieved' per PRISMA 2020)"
+            logger.warning(
+                "Records without retrievable content: %d "
+                "(counted as reports_not_retrieved per PRISMA 2020)",
+                reports_not_retrieved,
             )
 
         # Update PRISMA counts with reports_not_retrieved
@@ -516,17 +538,18 @@ async def parse_documents_node(state: CDRState, config: RunnableConfig) -> dict:
 
                 if gate_result.failed:
                     filtered_snippets += 1
-                    print(
-                        f"[ParseDocs] Gate filtered snippet {snippet.snippet_id}: "
-                        f"population excluded"
+                    logger.debug(
+                        "Evidence gate filtered snippet %s: population excluded",
+                        snippet.snippet_id,
                     )
                 else:
                     validated_snippets.append(snippet)
 
             if filtered_snippets > 0:
-                print(
-                    f"[ParseDocs] ⚠️ Snippet validation: {filtered_snippets} snippets "
-                    f"filtered for population exclusion, {len(validated_snippets)} passed"
+                logger.warning(
+                    "Snippet validation filtered %d snippets for population exclusion; %d passed",
+                    filtered_snippets,
+                    len(validated_snippets),
                 )
                 snippets = validated_snippets
 
